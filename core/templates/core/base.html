@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}TEAM CCA{% endblock %}</title>
+</head>
+<body>
+    <header>
+        <h1>TEAM CCA Attendance System</h1>
+        {% if user.is_authenticated %}
+            <p>Logged in as: {{ user.username }} ({{ user.get_role_display }})
+               | <a href="{% url 'logout' %}">Logout</a></p>
+        {% endif %}
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
