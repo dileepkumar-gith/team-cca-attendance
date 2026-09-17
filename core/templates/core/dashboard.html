@@ -4,10 +4,12 @@
     <h2>Welcome, {{ user.username }}</h2>
 
     {% if user.role == 'admin' %}
-        <p>You are an <strong>Admin</strong>. You can manage all streams, members, and add achievements.</p>
-    {% elif user.role == 'organizer' %}
-        <p>You are an <strong>Organizer</strong>. You can mark attendance for your assigned stream(s).</p>
-    {% elif user.role == 'viewer' %}
-        <p>You are a <strong>Viewer</strong>. You can view members and attendance, but cannot make changes.</p>
-    {% endif %}
+    <p>You are an <strong>Admin</strong>. You can manage all streams, members, and add achievements.</p>
+    <p><a href="{% url 'mark_attendance' %}">Mark Attendance</a></p>
+{% elif user.role == 'organizer' %}
+    <p>You are an <strong>Organizer</strong>. You can mark attendance for your assigned stream(s).</p>
+    <p><a href="{% url 'mark_attendance' %}">Mark Attendance</a></p>
+{% elif user.role == 'viewer' %}
+    <p>You are a <strong>Viewer</strong>. You can view members and attendance, but cannot make changes.</p>
+{% endif %}
 {% endblock %}
