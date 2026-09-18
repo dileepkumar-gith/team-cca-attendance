@@ -125,3 +125,67 @@ def add_achievement(request, member_id):
             messages.error(request, "Title and date are required.")
 
     return render(request, 'core/add_achievement.html', {'member': member})
+@role_required('admin')
+def member_add(request):
+    """Admin-only: create a new Member."""
+    streams = Stream.objects.all()
+
+    if request.method == 'POST':
+        full_name = request.POST.get('full_name', '').strip()
+        branch = request.POST.get('branch', '').strip()
+        year = request.POST.get('year')
+        roll_number = request.POST.get('roll_number', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        position = request.POST.get('position', '').strip()
+        stream_ids = request.POST.getlist('streams')
+
+        if full_name and branch and year and roll_number:
+            member = Member.objects.create(
+                full_name=full_name, branch=branch, year=year,
+                roll_number=roll_number, phone=phone, position=position,
+            )
+            member.streams.set(stream_ids)
+            messages.success(request, f"{full_name} added successfully.")
+            return redirect('member_detail', member_id=member.id)
+        else:
+            messages.error(request, "Full name, branch, year, and roll number are required.")
+
+    return render(request, 'core/member_form.html', {'streams': streams, 'member': None})
+
+
+@role_required('admin')
+def member_edit(request, member_id):
+    """Admin-only: edit an existing Member."""
+    member = get_object_or_404(Member, id=member_id)
+    streams = Stream.objects.all()
+
+    if request.method == 'POST':
+        member.full_name = request.POST.get('full_name', '').strip()
+        member.branch = request.POST.get('branch', '').strip()
+        member.year = request.POST.get('year')
+        member.roll_number = request.POST.get('roll_number', '').strip()
+        member.phone = request.POST.get('phone', '').strip()
+        member.position = request.POST.get('position', '').strip()
+        member.save()
+        member.streams.set(request.POST.getlist('streams'))
+
+        messages.success(request, f"{member.full_name} updated successfully.")
+        return redirect('member_detail', member_id=member.id)
+
+    return render(request, 'core/member_form.html', {'streams': streams, 'member': member})
+@role_required('admin')
+def member_delete(request, member_id):
+    """
+    Admin-only: deletes a Member after confirmation.
+    Shows a warning page first (GET), only deletes on actual confirmation (POST).
+    """
+    member = get_object_or_404(Member, id=member_id)
+
+    if request.method == 'POST':
+        member_name = member.full_name
+        member.delete()
+        messages.success(request, f"{member_name} has been permanently deleted.")
+        return redirect('member_list')
+
+    return render(request, 'core/member_confirm_delete.html', {'member': member})
+

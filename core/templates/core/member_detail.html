@@ -11,7 +11,11 @@
     </p>
 
     {% if user.role == 'admin' %}
-        <p><a href="{% url 'add_achievement' member.id %}">+ Add Achievement</a></p>
+    <p>
+        <a href="{% url 'add_achievement' member.id %}">+ Add Achievement</a> |
+        <a href="{% url 'member_edit' member.id %}">Edit Member</a> |
+        <a href="{% url 'member_delete' member.id %}" style="color:red;">Delete Member</a>
+    </p>
     {% endif %}
 
     <h3>Achievements</h3>
