@@ -33,6 +33,7 @@
 
     <h3>Attendance History</h3>
     {% if attendance_records %}
+    <div class="table-scroll">
         <table border="1" cellpadding="5">
             <tr><th>Date</th><th>Stream</th><th>Status</th></tr>
             {% for record in attendance_records %}
@@ -43,6 +44,7 @@
                 </tr>
             {% endfor %}
         </table>
+    </div>
     {% else %}
         <p>No attendance records yet.</p>
     {% endif %}

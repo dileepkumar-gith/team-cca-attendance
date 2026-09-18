@@ -3,9 +3,9 @@
 {% block content %}
     <h2>Mark Attendance</h2>
 
-    {% if messages %}
+        {% if messages %}
         {% for message in messages %}
-            <p style="color:green;">{{ message }}</p>
+            <p class="success-message">{{ message }}</p>
         {% endfor %}
     {% endif %}
 
@@ -35,6 +35,7 @@
                 {% csrf_token %}
                 <input type="hidden" name="stream" value="{{ selected_stream.id }}">
                 <input type="hidden" name="session_date" value="{{ selected_date }}">
+                <div class="table-scroll">
                 <table border="1" cellpadding="5">
                     <tr><th>Member</th><th>Present</th><th>Absent</th></tr>
                     {% for member in members %}
@@ -45,6 +46,7 @@
                         </tr>
                     {% endfor %}
                 </table>
+                </div>
                 <button type="submit">Save Attendance</button>
             </form>
         {% else %}

@@ -3,6 +3,12 @@
 {% block content %}
     <h2>Add Achievement for {{ member.full_name }}</h2>
 
+    {% if messages %}
+        {% for message in messages %}
+            <p class="{% if message.tags == 'error' %}error-message{% else %}success-message{% endif %}">{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+
     <form method="post">
         {% csrf_token %}
         <p>

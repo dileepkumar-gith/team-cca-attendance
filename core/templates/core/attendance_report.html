@@ -30,11 +30,11 @@
         </p>
 
         {% if report_rows %}
+        <div class="table-scroll">
             <table border="1" cellpadding="5">
                 <tr><th>Member</th><th>Roll Number</th><th>Present</th><th>Total Sessions</th><th>Percentage</th></tr>
                 {% for row in report_rows %}
-                    <tr {% if row.percentage < 50 %}style="background-color:#ffe0e0;"{% endif %}>
-                        <td>{{ row.member.full_name }}</td>
+                    <tr class="{% if row.percentage < 50 %}low-attendance{% endif %}">    <td>{{ row.member.full_name }}</td>
                         <td>{{ row.member.roll_number }}</td>
                         <td>{{ row.present_count }}</td>
                         <td>{{ row.total_sessions }}</td>
@@ -42,6 +42,7 @@
                     </tr>
                 {% endfor %}
             </table>
+        </div>
         {% else %}
             <p>No members or sessions found for this stream/date range.</p>
         {% endif %}
