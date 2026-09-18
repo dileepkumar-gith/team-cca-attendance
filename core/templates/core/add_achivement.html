@@ -1,0 +1,21 @@
+{% extends 'core/base.html' %}
+{% block title %}Add Achievement - TEAM CCA{% endblock %}
+{% block content %}
+    <h2>Add Achievement for {{ member.full_name }}</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        <p>
+            <label>Title:<br><input type="text" name="title" required></label>
+        </p>
+        <p>
+            <label>Description:<br><textarea name="description"></textarea></label>
+        </p>
+        <p>
+            <label>Date Awarded:<br><input type="date" name="date_awarded" required></label>
+        </p>
+        <button type="submit">Save Achievement</button>
+    </form>
+
+    <p><a href="{% url 'member_detail' member.id %}">&larr; Back to {{ member.full_name }}'s profile</a></p>
+{% endblock %}

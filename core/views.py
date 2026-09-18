@@ -3,8 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .decorators import role_required
-from .models import Stream, Member, Session, Attendance, OrganizerStream
-
+from .models import Stream, Member, Session, Attendance, OrganizerStream, Achievement
 
 @login_required
 def dashboard(request):
@@ -67,3 +66,62 @@ def mark_attendance(request):
         'today': date.today().isoformat(),
     }
     return render(request, 'core/mark_attendance.html', context)
+
+@login_required
+def member_list(request):
+    """
+    Shows all members, with optional search by name or roll number.
+    All logged-in roles (Admin, Organizer, Viewer) can view this list.
+    """
+    query = request.GET.get('q', '').strip()
+    members = Member.objects.all().order_by('full_name')
+
+    if query:
+        members = members.filter(full_name__icontains=query) | members.filter(roll_number__icontains=query)
+
+    return render(request, 'core/member_list.html', {'members': members, 'query': query})
+
+
+@login_required
+def member_detail(request, member_id):
+    """
+    Shows one member's full profile: streams, attendance history, achievements.
+    All logged-in roles can view this.
+    """
+    member = get_object_or_404(Member, id=member_id)
+    attendance_records = member.attendance_records.select_related('session', 'session__stream').order_by('-session__session_date')
+    achievements = member.achievements.all().order_by('-date_awarded')
+
+    return render(request, 'core/member_detail.html', {
+        'member': member,
+        'attendance_records': attendance_records,
+        'achievements': achievements,
+    })
+
+
+@role_required('admin')
+def add_achievement(request, member_id):
+    """
+    Only Admins can add achievements. Organizers and Viewers are blocked.
+    """
+    member = get_object_or_404(Member, id=member_id)
+
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        description = request.POST.get('description', '').strip()
+        date_awarded = request.POST.get('date_awarded')
+
+        if title and date_awarded:
+            Achievement.objects.create(
+                member=member,
+                title=title,
+                description=description,
+                date_awarded=date_awarded,
+                added_by=request.user,
+            )
+            messages.success(request, f"Achievement added for {member.full_name}.")
+            return redirect('member_detail', member_id=member.id)
+        else:
+            messages.error(request, "Title and date are required.")
+
+    return render(request, 'core/add_achievement.html', {'member': member})

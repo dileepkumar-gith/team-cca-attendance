@@ -1,0 +1,45 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ member.full_name }} - TEAM CCA{% endblock %}
+{% block content %}
+    <p><a href="{% url 'member_list' %}">&larr; Back to Members</a></p>
+
+    <h2>{{ member.full_name }} ({{ member.roll_number }})</h2>
+    <p>
+        Branch: {{ member.branch }} | Year: {{ member.get_year_display }}<br>
+        Position: {{ member.position|default:"—" }}<br>
+        Streams: {% for stream in member.streams.all %}{{ stream.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+    </p>
+
+    {% if user.role == 'admin' %}
+        <p><a href="{% url 'add_achievement' member.id %}">+ Add Achievement</a></p>
+    {% endif %}
+
+    <h3>Achievements</h3>
+    {% if achievements %}
+        <ul>
+            {% for a in achievements %}
+                <li><strong>{{ a.title }}</strong> — {{ a.date_awarded }}
+                    {% if a.description %}<br>{{ a.description }}{% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No achievements recorded yet.</p>
+    {% endif %}
+
+    <h3>Attendance History</h3>
+    {% if attendance_records %}
+        <table border="1" cellpadding="5">
+            <tr><th>Date</th><th>Stream</th><th>Status</th></tr>
+            {% for record in attendance_records %}
+                <tr>
+                    <td>{{ record.session.session_date }}</td>
+                    <td>{{ record.session.stream.name }}</td>
+                    <td>{{ record.get_status_display }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No attendance records yet.</p>
+    {% endif %}
+{% endblock %}
