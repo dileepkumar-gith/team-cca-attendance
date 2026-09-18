@@ -280,3 +280,28 @@ def attendance_report_csv(request):
 
     return response
 
+@login_required
+def my_profile(request):
+    """
+    Shows the logged-in user's own Member profile: streams, attendance, achievements.
+    Works for any role, as long as their User account is linked to a Member (Day 2/6's `user` field).
+    """
+    member = getattr(request.user, 'member_profile', None)
+
+    if member is None:
+        return render(request, 'core/my_profile_unlinked.html')
+
+    attendance_records = member.attendance_records.select_related(
+        'session', 'session__stream'
+    ).order_by('-session__session_date')
+    achievements = member.achievements.all().order_by('-date_awarded')
+
+    return render(request, 'core/member_detail.html', {
+        'member': member,
+        'attendance_records': attendance_records,
+        'achievements': achievements,
+        'is_own_profile': True,
+    })
+
+
+

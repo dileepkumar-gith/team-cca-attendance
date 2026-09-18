@@ -1,7 +1,9 @@
 {% extends 'core/base.html' %}
 {% block title %}{{ member.full_name }} - TEAM CCA{% endblock %}
 {% block content %}
+    {% if not is_own_profile %}
     <p><a href="{% url 'member_list' %}">&larr; Back to Members</a></p>
+    {% endif %}
 
     <h2>{{ member.full_name }} ({{ member.roll_number }})</h2>
     <p>
@@ -10,7 +12,7 @@
         Streams: {% for stream in member.streams.all %}{{ stream.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
     </p>
 
-    {% if user.role == 'admin' %}
+    {% if user.role == 'admin' and not is_own_profile %}
     <p>
         <a href="{% url 'add_achievement' member.id %}">+ Add Achievement</a> |
         <a href="{% url 'member_edit' member.id %}">Edit Member</a> |
