@@ -1,0 +1,49 @@
+{% extends 'core/base.html' %}
+{% block title %}Attendance Report - TEAM CCA{% endblock %}
+{% block content %}
+    <h2>Attendance Report</h2>
+
+    <form method="get">
+        <label>Stream:
+            <select name="stream" required>
+                <option value="">-- Select Stream --</option>
+                {% for stream in streams %}
+                    <option value="{{ stream.id }}" {% if selected_stream.id == stream.id %}selected{% endif %}>
+                        {{ stream.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>From: <input type="date" name="start_date" value="{{ start_date|default:'' }}"></label>
+        <label>To: <input type="date" name="end_date" value="{{ end_date|default:'' }}"></label>
+        <button type="submit">Generate Report</button>
+    </form>
+
+    {% if selected_stream %}
+        <hr>
+        <h3>{{ selected_stream.name }} — Attendance Summary</h3>
+
+        <p>
+            <a href="{% url 'attendance_report_csv' %}?stream={{ selected_stream.id }}&start_date={{ start_date }}&end_date={{ end_date }}">
+                ⬇ Download as CSV
+            </a>
+        </p>
+
+        {% if report_rows %}
+            <table border="1" cellpadding="5">
+                <tr><th>Member</th><th>Roll Number</th><th>Present</th><th>Total Sessions</th><th>Percentage</th></tr>
+                {% for row in report_rows %}
+                    <tr {% if row.percentage < 50 %}style="background-color:#ffe0e0;"{% endif %}>
+                        <td>{{ row.member.full_name }}</td>
+                        <td>{{ row.member.roll_number }}</td>
+                        <td>{{ row.present_count }}</td>
+                        <td>{{ row.total_sessions }}</td>
+                        <td>{{ row.percentage }}%</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p>No members or sessions found for this stream/date range.</p>
+        {% endif %}
+    {% endif %}
+{% endblock %}

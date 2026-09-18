@@ -13,4 +13,6 @@ path('members/<int:member_id>/add-achievement/', views.add_achievement, name='ad
 path('members/add/', views.member_add, name='member_add'),
 path('members/<int:member_id>/edit/', views.member_edit, name='member_edit'),
 path('members/<int:member_id>/delete/', views.member_delete, name='member_delete'),
+path('reports/attendance/', views.attendance_report, name='attendance_report'),
+path('reports/attendance/csv/', views.attendance_report_csv, name='attendance_report_csv'),
 ]

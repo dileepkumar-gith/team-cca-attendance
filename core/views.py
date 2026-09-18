@@ -4,6 +4,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .decorators import role_required
 from .models import Stream, Member, Session, Attendance, OrganizerStream, Achievement
+import csv
+from django.http import HttpResponse
+from django.db.models import Count, Q
 
 @login_required
 def dashboard(request):
@@ -188,4 +191,92 @@ def member_delete(request, member_id):
         return redirect('member_list')
 
     return render(request, 'core/member_confirm_delete.html', {'member': member})
+
+@login_required
+def attendance_report(request):
+    """
+    Shows, per stream, each member's attendance count and percentage
+    across all sessions held for that stream (optionally filtered by date range).
+    Available to all logged-in roles (Admin, Organizer, Viewer) for visibility.
+    """
+    streams = Stream.objects.all()
+    stream_id = request.GET.get('stream')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    selected_stream = None
+    report_rows = []
+
+    if stream_id:
+        selected_stream = get_object_or_404(Stream, id=stream_id)
+
+        sessions = Session.objects.filter(stream=selected_stream)
+        if start_date:
+            sessions = sessions.filter(session_date__gte=start_date)
+        if end_date:
+            sessions = sessions.filter(session_date__lte=end_date)
+
+        total_sessions = sessions.count()
+        members = selected_stream.members.all()
+
+        for member in members:
+            present_count = Attendance.objects.filter(
+                member=member, session__in=sessions, status='present'
+            ).count()
+
+            percentage = round((present_count / total_sessions) * 100, 1) if total_sessions > 0 else 0
+
+            report_rows.append({
+                'member': member,
+                'present_count': present_count,
+                'total_sessions': total_sessions,
+                'percentage': percentage,
+            })
+
+        # Sort worst-attendance-first, so problem cases are immediately visible.
+        report_rows.sort(key=lambda row: row['percentage'])
+
+    return render(request, 'core/attendance_report.html', {
+        'streams': streams,
+        'selected_stream': selected_stream,
+        'report_rows': report_rows,
+        'start_date': start_date,
+        'end_date': end_date,
+    })
+
+@login_required
+def attendance_report_csv(request):
+    """
+    Same data as attendance_report, but returned as a downloadable CSV file
+    instead of an HTML page.
+    """
+    stream_id = request.GET.get('stream')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    selected_stream = get_object_or_404(Stream, id=stream_id)
+
+    sessions = Session.objects.filter(stream=selected_stream)
+    if start_date:
+        sessions = sessions.filter(session_date__gte=start_date)
+    if end_date:
+        sessions = sessions.filter(session_date__lte=end_date)
+
+    total_sessions = sessions.count()
+    members = selected_stream.members.all()
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{selected_stream.name}_attendance_report.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Member Name', 'Roll Number', 'Sessions Present', 'Total Sessions', 'Percentage'])
+
+    for member in members:
+        present_count = Attendance.objects.filter(
+            member=member, session__in=sessions, status='present'
+        ).count()
+        percentage = round((present_count / total_sessions) * 100, 1) if total_sessions > 0 else 0
+        writer.writerow([member.full_name, member.roll_number, present_count, total_sessions, percentage])
+
+    return response
 

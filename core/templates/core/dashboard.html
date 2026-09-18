@@ -3,6 +3,7 @@
 {% block content %}
     <h2>Welcome, {{ user.username }}</h2>
     <p><a href="{% url 'member_list' %}">View Members</a></p>
+    <p><a href="{% url 'attendance_report' %}">Attendance Report</a></p>
     
     {% if user.role == 'admin' %}
     <p>You are an <strong>Admin</strong>. You can manage all streams, members, and add achievements.</p>
