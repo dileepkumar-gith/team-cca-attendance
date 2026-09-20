@@ -16,4 +16,6 @@ path('members/<int:member_id>/delete/', views.member_delete, name='member_delete
 path('reports/attendance/', views.attendance_report, name='attendance_report'),
 path('reports/attendance/csv/', views.attendance_report_csv, name='attendance_report_csv'),
 path('my-profile/', views.my_profile, name='my_profile'),
+path('users/create/', views.create_login, name='create_login'),
+path('attendance/mark-students/', views.mark_student_attendance, name='mark_student_attendance'),
 ]

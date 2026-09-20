@@ -7,10 +7,19 @@
     
     {% if user.role == 'admin' %}
     <p>You are an <strong>Admin</strong>. You can manage all streams, members, and add achievements.</p>
-    <p><a href="{% url 'mark_attendance' %}">Mark Attendance</a></p>
+    <p>
+        <a href="{% url 'mark_attendance' %}">Mark Committee Attendance</a> |
+        <a href="{% url 'mark_student_attendance' %}">Mark Student Attendance</a> |
+        <a href="{% url 'create_login' %}">Create Committee Login</a>
+    </p>
+
+
 {% elif user.role == 'organizer' %}
-    <p>You are an <strong>Organizer</strong>. You can mark attendance for your assigned stream(s).</p>
-    <p><a href="{% url 'mark_attendance' %}">Mark Attendance</a></p>
+    <p>You are an <strong>Organizer</strong>. You can mark attendance for students in your assigned stream(s).</p>
+    <p><a href="{% url 'mark_student_attendance' %}">Mark Student Attendance</a></p>
+
+
+    
 {% elif user.role == 'viewer' %}
     <p>You are a <strong>Viewer</strong>. You can view members and attendance, but cannot make changes.</p>
 {% endif %}

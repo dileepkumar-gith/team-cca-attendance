@@ -1,0 +1,45 @@
+{% extends 'core/base.html' %}
+{% block title %}Create Login - TEAM CCA{% endblock %}
+{% block content %}
+    <h2>Create Committee Login</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <p class="error-message">{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+
+    {% if unlinked_members %}
+        <form method="post">
+            {% csrf_token %}
+            <p><label>Member:<br>
+                <select name="member_id" required>
+                    <option value="">-- Select Member --</option>
+                    {% for member in unlinked_members %}
+                        <option value="{{ member.id }}">{{ member.full_name }} ({{ member.roll_number }}) — {{ member.position|default:"No position" }}</option>
+                    {% endfor %}
+                </select></label></p>
+
+            <p><label>Username:<br>
+                <input type="text" name="username" required
+                       placeholder="e.g. their roll number"></label></p>
+
+            <p><label>Password:<br>
+                <input type="password" name="password" required></label></p>
+
+            <p><label>Role:<br>
+                <select name="role" required>
+                    <option value="">-- Select Role --</option>
+                    {% for value, label in roles %}
+                        <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select></label></p>
+
+            <button type="submit">Create Login</button>
+        </form>
+    {% else %}
+        <p>All members already have a login account linked. Nothing left to create here.</p>
+    {% endif %}
+
+    <p><a href="{% url 'member_list' %}">&larr; Back to Members</a></p>
+{% endblock %}

@@ -118,3 +118,44 @@ class Achievement(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.member.full_name}"
+
+class Student(models.Model):
+    """A regular club student who attends stream sessions (separate from committee Members)."""
+    class Year(models.IntegerChoices):
+        FIRST = 1, '1st Year'
+        SECOND = 2, '2nd Year'
+        THIRD = 3, '3rd Year'
+        FOURTH = 4, '4th Year'
+
+    full_name = models.CharField(max_length=100)
+    branch = models.CharField(max_length=50)
+    year = models.PositiveSmallIntegerField(choices=Year.choices)
+    roll_number = models.CharField(max_length=30, unique=True)
+    phone = models.CharField(max_length=15, blank=True)
+    streams = models.ManyToManyField(Stream, related_name='students')
+    joined_date = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.full_name} ({self.roll_number})"
+
+
+class StudentAttendance(models.Model):
+    """
+    One attendance record: a Student's status for a given Session.
+    Marked by Organizers (or Admins), separate from committee Member attendance.
+    """
+    class Status(models.TextChoices):
+        PRESENT = 'present', 'Present'
+        ABSENT = 'absent', 'Absent'
+
+    session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name='student_attendance_records')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='attendance_records')
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.ABSENT)
+    marked_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('session', 'student')
+
+    def __str__(self):
+        return f"{self.student.full_name} - {self.session} - {self.status}"
+

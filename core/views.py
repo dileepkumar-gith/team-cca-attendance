@@ -3,10 +3,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .decorators import role_required
-from .models import Stream, Member, Session, Attendance, OrganizerStream, Achievement
+from .models import Stream, Member, Session, Attendance, OrganizerStream, Achievement, User, Student, StudentAttendance
 import csv
 from django.http import HttpResponse
 from django.db.models import Count, Q
+from django.contrib.auth.hashers import make_password
 
 @login_required
 def dashboard(request):
@@ -16,59 +17,6 @@ def dashboard(request):
     not logged in to the login page — we don't have to check that manually.
     """
     return render(request, 'core/dashboard.html')
-
-
-@role_required('admin', 'organizer')
-def mark_attendance(request):
-    user = request.user
-
-    # Admins can mark attendance for any stream.
-    # Organizers can only mark attendance for streams assigned to them.
-    if user.role == 'admin':
-        allowed_streams = Stream.objects.all()
-    else:
-        allowed_streams = Stream.objects.filter(organizers__organizer=user)
-
-    selected_stream = None
-    selected_date = None
-    members = []
-
-    stream_id = request.GET.get('stream') or request.POST.get('stream')
-    session_date = request.GET.get('session_date') or request.POST.get('session_date')
-
-    if stream_id and session_date:
-        # SECURITY CHECK: even if someone manually edits the URL,
-        # this ensures the selected stream is actually one they're allowed to use.
-        selected_stream = get_object_or_404(allowed_streams, id=stream_id)
-        selected_date = session_date
-        members = selected_stream.members.all()
-
-    if request.method == 'POST' and selected_stream:
-        session, created = Session.objects.get_or_create(
-            stream=selected_stream,
-            session_date=selected_date,
-            defaults={'created_by': user},
-        )
-
-        for member in members:
-            status = request.POST.get(f'status_{member.id}', 'absent')
-            Attendance.objects.update_or_create(
-                session=session,
-                member=member,
-                defaults={'status': status},
-            )
-
-        messages.success(request, f"Attendance saved for {selected_stream.name} on {selected_date}.")
-        return redirect(f"{request.path}?stream={selected_stream.id}&session_date={selected_date}")
-
-    context = {
-        'allowed_streams': allowed_streams,
-        'selected_stream': selected_stream,
-        'selected_date': selected_date,
-        'members': members,
-        'today': date.today().isoformat(),
-    }
-    return render(request, 'core/mark_attendance.html', context)
 
 @login_required
 def member_list(request):
@@ -303,5 +251,157 @@ def my_profile(request):
         'is_own_profile': True,
     })
 
+@role_required('admin')
+def create_login(request):
+    """
+    Admin-only: creates a new login (User) and links it to an existing,
+    not-yet-linked Member in a single step.
+    """
+    # Only show members who don't already have a login account.
+    unlinked_members = Member.objects.filter(user__isnull=True).order_by('full_name')
 
+    if request.method == 'POST':
+        member_id = request.POST.get('member_id')
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '').strip()
+        role = request.POST.get('role')
 
+        member = get_object_or_404(Member, id=member_id, user__isnull=True)
+
+        if not username or not password or not role:
+            messages.error(request, "Member, username, password, and role are all required.")
+        elif User.objects.filter(username=username).exists():
+            messages.error(request, f"Username '{username}' is already taken.")
+        else:
+            new_user = User.objects.create(
+                username=username,
+                password=make_password(password),
+                role=role,
+            )
+            member.user = new_user
+            member.save()
+
+            messages.success(
+                request,
+                f"Login created for {member.full_name} — username: {username}, role: {new_user.get_role_display()}."
+            )
+            return redirect('member_detail', member_id=member.id)
+
+    return render(request, 'core/create_login.html', {
+        'unlinked_members': unlinked_members,
+        'roles': User.Role.choices,
+    })
+
+@role_required('admin', 'organizer')
+def mark_attendance(request):
+    user = request.user
+
+    if user.role == 'admin':
+        allowed_streams = Stream.objects.all()
+    else:
+        allowed_streams = Stream.objects.filter(organizers__organizer=user)
+
+    selected_stream = None
+    selected_date = None
+    members = []
+
+    stream_id = request.GET.get('stream') or request.POST.get('stream')
+    session_date = request.GET.get('session_date') or request.POST.get('session_date')
+
+    if stream_id and session_date:
+        selected_stream = get_object_or_404(allowed_streams, id=stream_id)
+        selected_date = session_date
+        members = list(selected_stream.members.all())
+
+        existing_session = Session.objects.filter(stream=selected_stream, session_date=selected_date).first()
+        existing_statuses = {}
+        if existing_session:
+            existing_statuses = {
+                a.member_id: a.status for a in Attendance.objects.filter(session=existing_session)
+            }
+        for member in members:
+            member.existing_status = existing_statuses.get(member.id, 'present')
+
+    if request.method == 'POST' and selected_stream:
+        session, created = Session.objects.get_or_create(
+            stream=selected_stream,
+            session_date=selected_date,
+            defaults={'created_by': user},
+        )
+
+        for member in members:
+            status = request.POST.get(f'status_{member.id}', 'absent')
+            Attendance.objects.update_or_create(
+                session=session,
+                member=member,
+                defaults={'status': status},
+            )
+
+        messages.success(request, f"Attendance saved for {selected_stream.name} on {selected_date}.")
+        return redirect(f"{request.path}?stream={selected_stream.id}&session_date={selected_date}")
+
+    context = {
+        'allowed_streams': allowed_streams,
+        'selected_stream': selected_stream,
+        'selected_date': selected_date,
+        'members': members,
+        'today': date.today().isoformat(),
+    }
+    return render(request, 'core/mark_attendance.html', context)
+
+@role_required('admin', 'organizer')
+def mark_student_attendance(request):
+    user = request.user
+
+    if user.role == 'admin':
+        allowed_streams = Stream.objects.all()
+    else:
+        allowed_streams = Stream.objects.filter(organizers__organizer=user)
+
+    selected_stream = None
+    selected_date = None
+    students = []
+
+    stream_id = request.GET.get('stream') or request.POST.get('stream')
+    session_date = request.GET.get('session_date') or request.POST.get('session_date')
+
+    if stream_id and session_date:
+        selected_stream = get_object_or_404(allowed_streams, id=stream_id)
+        selected_date = session_date
+        students = list(selected_stream.students.all())
+
+        existing_session = Session.objects.filter(stream=selected_stream, session_date=selected_date).first()
+        existing_statuses = {}
+        if existing_session:
+            existing_statuses = {
+                a.student_id: a.status for a in StudentAttendance.objects.filter(session=existing_session)
+            }
+        for student in students:
+            student.existing_status = existing_statuses.get(student.id, 'present')
+
+    if request.method == 'POST' and selected_stream:
+        session, created = Session.objects.get_or_create(
+            stream=selected_stream,
+            session_date=selected_date,
+            defaults={'created_by': user},
+        )
+
+        for student in students:
+            status = request.POST.get(f'status_{student.id}', 'absent')
+            StudentAttendance.objects.update_or_create(
+                session=session,
+                student=student,
+                defaults={'status': status},
+            )
+
+        messages.success(request, f"Student attendance saved for {selected_stream.name} on {selected_date}.")
+        return redirect(f"{request.path}?stream={selected_stream.id}&session_date={selected_date}")
+
+    context = {
+        'allowed_streams': allowed_streams,
+        'selected_stream': selected_stream,
+        'selected_date': selected_date,
+        'students': students,
+        'today': date.today().isoformat(),
+    }
+    return render(request, 'core/mark_student_attendance.html', context)  

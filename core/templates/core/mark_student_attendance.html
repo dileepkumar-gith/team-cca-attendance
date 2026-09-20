@@ -1,9 +1,9 @@
 {% extends 'core/base.html' %}
-{% block title %}Mark Attendance - TEAM CCA{% endblock %}
+{% block title %}Mark Student Attendance - TEAM CCA{% endblock %}
 {% block content %}
-    <h2>Mark Attendance</h2>
+    <h2>Mark Student Attendance</h2>
 
-        {% if messages %}
+    {% if messages %}
         {% for message in messages %}
             <p class="success-message">{{ message }}</p>
         {% endfor %}
@@ -23,26 +23,26 @@
         <label>Date:
             <input type="date" name="session_date" value="{{ selected_date|default:today }}" required>
         </label>
-        <button type="submit">Load Members</button>
+        <button type="submit">Load Students</button>
     </form>
 
     {% if selected_stream %}
         <hr>
         <h3>{{ selected_stream.name }} — {{ selected_date }}</h3>
 
-        {% if members %}
+        {% if students %}
             <form method="post">
                 {% csrf_token %}
                 <input type="hidden" name="stream" value="{{ selected_stream.id }}">
                 <input type="hidden" name="session_date" value="{{ selected_date }}">
                 <div class="table-scroll">
                 <table border="1" cellpadding="5">
-                    <tr><th>Member</th><th>Present</th><th>Absent</th></tr>
-                    {% for member in members %}
+                    <tr><th>Student</th><th>Present</th><th>Absent</th></tr>
+                    {% for student in students %}
                         <tr>
-                            <td>{{ member.full_name }} ({{ member.roll_number }})</td>
-                                                       <td><input type="radio" name="status_{{ member.id }}" value="present" {% if member.existing_status == 'present' %}checked{% endif %}></td>
-                            <td><input type="radio" name="status_{{ member.id }}" value="absent" {% if member.existing_status == 'absent' %}checked{% endif %}></td>
+                            <td>{{ student.full_name }} ({{ student.roll_number }})</td>
+                                                        <td><input type="radio" name="status_{{ student.id }}" value="present" {% if student.existing_status == 'present' %}checked{% endif %}></td>
+                            <td><input type="radio" name="status_{{ student.id }}" value="absent" {% if student.existing_status == 'absent' %}checked{% endif %}></td>
                         </tr>
                     {% endfor %}
                 </table>
@@ -50,7 +50,7 @@
                 <button type="submit">Save Attendance</button>
             </form>
         {% else %}
-            <p>No members are assigned to this stream yet.</p>
+            <p>No students are assigned to this stream yet.</p>
         {% endif %}
     {% endif %}
 {% endblock %}
