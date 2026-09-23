@@ -1,64 +1,82 @@
 {% extends 'core/base.html' %}
 {% block title %}Attendance Report - TEAM CCA{% endblock %}
 {% block content %}
-    <h2>Attendance Report</h2>
+    <h2 class="mb-3">Attendance Report</h2>
 
-    <form method="get">
-        <label>Stream:
-            <select name="stream" required>
-                <option value="">-- Select Stream --</option>
-                {% for stream in streams %}
-                    <option value="{{ stream.id }}" {% if selected_stream.id == stream.id %}selected{% endif %}>
-                        {{ stream.name }}
-                    </option>
-                {% endfor %}
-            </select>
-        </label>
-        <label>From: <input type="date" name="start_date" value="{{ start_date|default:'' }}"></label>
-        <label>To: <input type="date" name="end_date" value="{{ end_date|default:'' }}"></label>
-        <button type="submit">Generate Report</button>
-    </form>
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Stream</label>
+                    <select name="stream" class="form-select" required>
+                        <option value="">-- Select Stream --</option>
+                        {% for stream in streams %}
+                            <option value="{{ stream.id }}" {% if selected_stream.id == stream.id %}selected{% endif %}>{{ stream.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">From</label>
+                    <input type="date" name="start_date" class="form-control" value="{{ start_date|default:'' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">To</label>
+                    <input type="date" name="end_date" class="form-control" value="{{ end_date|default:'' }}">
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">Generate Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-           {% if selected_stream %}
-        <hr>
-        <h3>{{ selected_stream.name }} — Committee Member Attendance</h3>
+    {% if selected_stream %}
+        <h4 class="mb-3">{{ selected_stream.name }} — Committee Member Attendance</h4>
         {% if member_rows %}
-            <div class="table-scroll">
-            <table border="1" cellpadding="5">
-                <tr><th>Member</th><th>Roll Number</th><th>Present</th><th>Total Sessions</th><th>Percentage</th></tr>
-                {% for row in member_rows %}
-                    <tr class="{% if row.percentage < 50 %}low-attendance{% endif %}">
-                        <td>{{ row.name }}</td>
-                        <td>{{ row.roll_number }}</td>
-                        <td>{{ row.present_count }}</td>
-                        <td>{{ row.total_sessions }}</td>
-                        <td>{{ row.percentage }}%</td>
-                    </tr>
-                {% endfor %}
-            </table>
+            <div class="card mb-4">
+                <div class="table-scroll">
+                <table class="table table-hover mb-0">
+                    <thead><tr><th>Member</th><th>Roll Number</th><th>Present</th><th>Total Sessions</th><th>Percentage</th></tr></thead>
+                    <tbody>
+                        {% for row in member_rows %}
+                            <tr class="{% if row.percentage < 50 %}low-attendance{% endif %}">
+                                <td>{{ row.name }}</td>
+                                <td>{{ row.roll_number }}</td>
+                                <td>{{ row.present_count }}</td>
+                                <td>{{ row.total_sessions }}</td>
+                                <td><strong>{{ row.percentage }}%</strong></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                </div>
             </div>
         {% else %}
-            <p>No committee members in this stream.</p>
+            <p class="text-muted">No committee members in this stream.</p>
         {% endif %}
 
-        <h3>{{ selected_stream.name }} — Student Attendance</h3>
+        <h4 class="mb-3">{{ selected_stream.name }} — Student Attendance</h4>
         {% if student_rows %}
-            <div class="table-scroll">
-            <table border="1" cellpadding="5">
-                <tr><th>Student</th><th>Roll Number</th><th>Present</th><th>Total Sessions</th><th>Percentage</th></tr>
-                {% for row in student_rows %}
-                    <tr class="{% if row.percentage < 50 %}low-attendance{% endif %}">
-                        <td>{{ row.name }}</td>
-                        <td>{{ row.roll_number }}</td>
-                        <td>{{ row.present_count }}</td>
-                        <td>{{ row.total_sessions }}</td>
-                        <td>{{ row.percentage }}%</td>
-                    </tr>
-                {% endfor %}
-            </table>
+            <div class="card mb-4">
+                <div class="table-scroll">
+                <table class="table table-hover mb-0">
+                    <thead><tr><th>Student</th><th>Roll Number</th><th>Present</th><th>Total Sessions</th><th>Percentage</th></tr></thead>
+                    <tbody>
+                        {% for row in student_rows %}
+                            <tr class="{% if row.percentage < 50 %}low-attendance{% endif %}">
+                                <td>{{ row.name }}</td>
+                                <td>{{ row.roll_number }}</td>
+                                <td>{{ row.present_count }}</td>
+                                <td>{{ row.total_sessions }}</td>
+                                <td><strong>{{ row.percentage }}%</strong></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                </div>
             </div>
         {% else %}
-            <p>No students in this stream yet.</p>
+            <p class="text-muted">No students in this stream yet.</p>
         {% endif %}
     {% endif %}
 {% endblock %}

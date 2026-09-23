@@ -1,27 +1,33 @@
 {% extends 'core/base.html' %}
 {% block title %}Add Achievement - TEAM CCA{% endblock %}
 {% block content %}
-    <h2>Add Achievement for {{ member.full_name }}</h2>
+    <div class="card mx-auto" style="max-width: 600px;">
+        <div class="card-header">Add Achievement for {{ member.full_name }}</div>
+        <div class="card-body">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
 
-    {% if messages %}
-        {% for message in messages %}
-            <p class="{% if message.tags == 'error' %}error-message{% else %}success-message{% endif %}">{{ message }}</p>
-        {% endfor %}
-    {% endif %}
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label">Title</label>
+                    <input type="text" name="title" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea name="description" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Date Awarded</label>
+                    <input type="date" name="date_awarded" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-accent w-100">Save Achievement</button>
+            </form>
 
-    <form method="post">
-        {% csrf_token %}
-        <p>
-            <label>Title:<br><input type="text" name="title" required></label>
-        </p>
-        <p>
-            <label>Description:<br><textarea name="description"></textarea></label>
-        </p>
-        <p>
-            <label>Date Awarded:<br><input type="date" name="date_awarded" required></label>
-        </p>
-        <button type="submit">Save Achievement</button>
-    </form>
-
-    <p><a href="{% url 'member_detail' member.id %}">&larr; Back to {{ member.full_name }}'s profile</a></p>
+            <p class="mt-3 mb-0"><a href="{% url 'member_detail' member.id %}">&larr; Back to {{ member.full_name }}'s profile</a></p>
+        </div>
+    </div>
 {% endblock %}

@@ -1,25 +1,40 @@
 {% extends 'core/base.html' %}
 {% block title %}Members - TEAM CCA{% endblock %}
 {% block content %}
-    <h2>Members</h2>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Members</h2>
+        {% if user.role == 'admin' %}
+            <a href="{% url 'member_add' %}" class="btn btn-accent">+ Add New Member</a>
+        {% endif %}
+    </div>
 
-    <form method="get">
-        <input type="text" name="q" placeholder="Search by name or roll number" value="{{ query }}">
-        <button type="submit">Search</button>
+    <form method="get" class="mb-3">
+        <div class="input-group">
+            <input type="text" name="q" class="form-control" placeholder="Search by name or roll number" value="{{ query }}">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div>
     </form>
 
-    <table border="1" cellpadding="5">
-        <tr><th>Name</th><th>Roll Number</th><th>Branch</th><th>Year</th><th>Position</th></tr>
-        {% for member in members %}
-            <tr>
-                <td><a href="{% url 'member_detail' member.id %}">{{ member.full_name }}</a></td>
-                <td>{{ member.roll_number }}</td>
-                <td>{{ member.branch }}</td>
-                <td>{{ member.get_year_display }}</td>
-                <td>{{ member.position|default:"—" }}</td>
-            </tr>
-        {% empty %}
-            <tr><td colspan="5">No members found.</td></tr>
-        {% endfor %}
-    </table>
+    <div class="card">
+        <div class="table-scroll">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr><th>Name</th><th>Roll Number</th><th>Branch</th><th>Year</th><th>Position</th></tr>
+            </thead>
+            <tbody>
+                {% for member in members %}
+                    <tr>
+                        <td><a href="{% url 'member_detail' member.id %}">{{ member.full_name }}</a></td>
+                        <td>{{ member.roll_number }}</td>
+                        <td>{{ member.branch }}</td>
+                        <td>{{ member.get_year_display }}</td>
+                        <td>{{ member.position|default:"—" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5" class="text-center text-muted py-3">No members found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
 {% endblock %}

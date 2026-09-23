@@ -1,50 +1,67 @@
 {% extends 'core/base.html' %}
 {% block title %}{% if member %}Edit{% else %}Add{% endif %} Member - TEAM CCA{% endblock %}
 {% block content %}
-    <h2>{% if member %}Edit {{ member.full_name }}{% else %}Add New Member{% endif %}</h2>
-    {% if user.role == 'admin' %}
-    <p><a href="{% url 'member_add' %}">+ Add New Member</a></p>
-    {% endif %}
-    <form method="post">
-        {% csrf_token %}
-        <p><label>Full Name:<br>
-            <input type="text" name="full_name" value="{{ member.full_name|default:'' }}" required></label></p>
+    <div class="card mx-auto" style="max-width: 600px;">
+        <div class="card-header">
+            {% if member %}Edit {{ member.full_name }}{% else %}Add New Member{% endif %}
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" name="full_name" class="form-control" value="{{ member.full_name|default:'' }}" required>
+                </div>
 
-        <p><label>Branch:<br>
-            <input type="text" name="branch" value="{{ member.branch|default:'' }}" required></label></p>
+                <div class="mb-3">
+                    <label class="form-label">Branch</label>
+                    <input type="text" name="branch" class="form-control" value="{{ member.branch|default:'' }}" required>
+                </div>
 
-        <p><label>Year:<br>
-            <select name="year" required>
-                <option value="">-- Select --</option>
-                <option value="1" {% if member.year == 1 %}selected{% endif %}>1st Year</option>
-                <option value="2" {% if member.year == 2 %}selected{% endif %}>2nd Year</option>
-                <option value="3" {% if member.year == 3 %}selected{% endif %}>3rd Year</option>
-                <option value="4" {% if member.year == 4 %}selected{% endif %}>4th Year</option>
-            </select></label></p>
+                <div class="mb-3">
+                    <label class="form-label">Year</label>
+                    <select name="year" class="form-select" required>
+                        <option value="">-- Select --</option>
+                        <option value="1" {% if member.year == 1 %}selected{% endif %}>1st Year</option>
+                        <option value="2" {% if member.year == 2 %}selected{% endif %}>2nd Year</option>
+                        <option value="3" {% if member.year == 3 %}selected{% endif %}>3rd Year</option>
+                        <option value="4" {% if member.year == 4 %}selected{% endif %}>4th Year</option>
+                    </select>
+                </div>
 
-        <p><label>Roll Number:<br>
-            <input type="text" name="roll_number" value="{{ member.roll_number|default:'' }}" required></label></p>
+                <div class="mb-3">
+                    <label class="form-label">Roll Number</label>
+                    <input type="text" name="roll_number" class="form-control" value="{{ member.roll_number|default:'' }}" required>
+                </div>
 
-        <p><label>Phone:<br>
-            <input type="text" name="phone" value="{{ member.phone|default:'' }}"></label></p>
+                <div class="mb-3">
+                    <label class="form-label">Phone</label>
+                    <input type="text" name="phone" class="form-control" value="{{ member.phone|default:'' }}">
+                </div>
 
-        <p><label>Position:<br>
-            <input type="text" name="position" value="{{ member.position|default:'' }}"
-                   placeholder="e.g. Main Coordinator, Arts Stream Organizer"></label></p>
+                <div class="mb-3">
+                    <label class="form-label">Position</label>
+                    <input type="text" name="position" class="form-control" value="{{ member.position|default:'' }}"
+                           placeholder="e.g. Main Coordinator, Arts Stream Organizer">
+                </div>
 
-        <p><label>Streams:<br>
-            <select name="streams" multiple size="4">
-                {% for stream in streams %}
-                    <option value="{{ stream.id }}"
-                        {% if member and stream in member.streams.all %}selected{% endif %}>
-                        {{ stream.name }}
-                    </option>
-                {% endfor %}
-            </select></label>
-            <br><small>Ctrl+Click (Windows) to select multiple streams</small></p>
+                <div class="mb-3">
+                    <label class="form-label">Streams</label>
+                    <select name="streams" class="form-select" multiple size="4">
+                        {% for stream in streams %}
+                            <option value="{{ stream.id }}"
+                                {% if member and stream in member.streams.all %}selected{% endif %}>
+                                {{ stream.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <small class="text-muted">Ctrl+Click (Windows) to select multiple streams</small>
+                </div>
 
-        <button type="submit">{% if member %}Save Changes{% else %}Add Member{% endif %}</button>
-    </form>
-
-    <p><a href="{% url 'member_list' %}">&larr; Back to Members</a></p>
+                <button type="submit" class="btn btn-accent w-100">
+                    {% if member %}Save Changes{% else %}Add Member{% endif %}
+                </button>
+            </form>
+        </div>
+    </div>
 {% endblock %}

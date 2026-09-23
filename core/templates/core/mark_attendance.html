@@ -1,56 +1,65 @@
 {% extends 'core/base.html' %}
-{% block title %}Mark Attendance - TEAM CCA{% endblock %}
+{% block title %}Mark Committee Attendance - TEAM CCA{% endblock %}
 {% block content %}
-    <h2>Mark Attendance</h2>
+    <h2 class="mb-3">Mark Committee Attendance</h2>
 
-        {% if messages %}
+    {% if messages %}
         {% for message in messages %}
-            <p class="success-message">{{ message }}</p>
+            <div class="alert alert-success">{{ message }}</div>
         {% endfor %}
     {% endif %}
 
-    <form method="get">
-        <label>Stream:
-            <select name="stream" required>
-                <option value="">-- Select Stream --</option>
-                {% for stream in allowed_streams %}
-                    <option value="{{ stream.id }}" {% if selected_stream.id == stream.id %}selected{% endif %}>
-                        {{ stream.name }}
-                    </option>
-                {% endfor %}
-            </select>
-        </label>
-        <label>Date:
-            <input type="date" name="session_date" value="{{ selected_date|default:today }}" required>
-        </label>
-        <button type="submit">Load Members</button>
-    </form>
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Stream</label>
+                    <select name="stream" class="form-select" required>
+                        <option value="">-- Select Stream --</option>
+                        {% for stream in allowed_streams %}
+                            <option value="{{ stream.id }}" {% if selected_stream.id == stream.id %}selected{% endif %}>{{ stream.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Date</label>
+                    <input type="date" name="session_date" class="form-control" value="{{ selected_date|default:today }}" required>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">Load Members</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     {% if selected_stream %}
-        <hr>
-        <h3>{{ selected_stream.name }} — {{ selected_date }}</h3>
+        <h4 class="mb-3">{{ selected_stream.name }} — {{ selected_date }}</h4>
 
         {% if members %}
             <form method="post">
                 {% csrf_token %}
                 <input type="hidden" name="stream" value="{{ selected_stream.id }}">
                 <input type="hidden" name="session_date" value="{{ selected_date }}">
-                <div class="table-scroll">
-                <table border="1" cellpadding="5">
-                    <tr><th>Member</th><th>Present</th><th>Absent</th></tr>
-                    {% for member in members %}
-                        <tr>
-                            <td>{{ member.full_name }} ({{ member.roll_number }})</td>
-                                                       <td><input type="radio" name="status_{{ member.id }}" value="present" {% if member.existing_status == 'present' %}checked{% endif %}></td>
-                            <td><input type="radio" name="status_{{ member.id }}" value="absent" {% if member.existing_status == 'absent' %}checked{% endif %}></td>
-                        </tr>
-                    {% endfor %}
-                </table>
+                <div class="card mb-3">
+                    <div class="table-scroll">
+                    <table class="table mb-0">
+                        <thead><tr><th>Member</th><th class="text-center">Present</th><th class="text-center">Absent</th></tr></thead>
+                        <tbody>
+                            {% for member in members %}
+                                <tr>
+                                    <td>{{ member.full_name }} <span class="text-muted">({{ member.roll_number }})</span></td>
+                                    <td class="text-center"><input type="radio" class="form-check-input" name="status_{{ member.id }}" value="present" {% if member.existing_status == 'present' %}checked{% endif %}></td>
+                                    <td class="text-center"><input type="radio" class="form-check-input" name="status_{{ member.id }}" value="absent" {% if member.existing_status == 'absent' %}checked{% endif %}></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
                 </div>
-                <button type="submit">Save Attendance</button>
+                <button type="submit" class="btn btn-accent">Save Attendance</button>
             </form>
         {% else %}
-            <p>No members are assigned to this stream yet.</p>
+            <p class="text-muted">No members are assigned to this stream yet.</p>
         {% endif %}
     {% endif %}
 {% endblock %}

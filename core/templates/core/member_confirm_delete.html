@@ -1,20 +1,23 @@
 {% extends 'core/base.html' %}
 {% block title %}Delete {{ member.full_name }} - TEAM CCA{% endblock %}
 {% block content %}
-    <h2>Delete Member?</h2>
+    <div class="card mx-auto border-danger" style="max-width: 600px;">
+        <div class="card-header bg-danger text-white">Delete Member?</div>
+        <div class="card-body">
+            <p>
+                Are you sure you want to permanently delete <strong>{{ member.full_name }} ({{ member.roll_number }})</strong>?
+            </p>
+            <div class="alert alert-danger">
+                This will also delete all of their attendance records ({{ member.attendance_records.count }} record(s))
+                and achievements ({{ member.achievements.count }} record(s)). This cannot be undone.
+            </div>
 
-    <p style="color:red;">
-        Are you sure you want to permanently delete <strong>{{ member.full_name }} ({{ member.roll_number }})</strong>?
-    </p>
-    <p style="color:red;">
-        This will also delete all of their attendance records ({{ member.attendance_records.count }} record(s))
-        and achievements ({{ member.achievements.count }} record(s)). This cannot be undone.
-    </p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger w-100 mb-2">Yes, Delete Permanently</button>
+            </form>
 
-    <form method="post">
-        {% csrf_token %}
-        <button type="submit" style="background:red; color:white;">Yes, Delete Permanently</button>
-    </form>
-
-    <p><a href="{% url 'member_detail' member.id %}">Cancel, go back</a></p>
+            <a href="{% url 'member_detail' member.id %}" class="btn btn-outline-secondary w-100">Cancel, go back</a>
+        </div>
+    </div>
 {% endblock %}
