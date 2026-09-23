@@ -19,32 +19,46 @@
         <button type="submit">Generate Report</button>
     </form>
 
-    {% if selected_stream %}
+           {% if selected_stream %}
         <hr>
-        <h3>{{ selected_stream.name }} — Attendance Summary</h3>
-
-        <p>
-            <a href="{% url 'attendance_report_csv' %}?stream={{ selected_stream.id }}&start_date={{ start_date }}&end_date={{ end_date }}">
-                ⬇ Download as CSV
-            </a>
-        </p>
-
-        {% if report_rows %}
-        <div class="table-scroll">
+        <h3>{{ selected_stream.name }} — Committee Member Attendance</h3>
+        {% if member_rows %}
+            <div class="table-scroll">
             <table border="1" cellpadding="5">
                 <tr><th>Member</th><th>Roll Number</th><th>Present</th><th>Total Sessions</th><th>Percentage</th></tr>
-                {% for row in report_rows %}
-                    <tr class="{% if row.percentage < 50 %}low-attendance{% endif %}">    <td>{{ row.member.full_name }}</td>
-                        <td>{{ row.member.roll_number }}</td>
+                {% for row in member_rows %}
+                    <tr class="{% if row.percentage < 50 %}low-attendance{% endif %}">
+                        <td>{{ row.name }}</td>
+                        <td>{{ row.roll_number }}</td>
                         <td>{{ row.present_count }}</td>
                         <td>{{ row.total_sessions }}</td>
                         <td>{{ row.percentage }}%</td>
                     </tr>
                 {% endfor %}
             </table>
-        </div>
+            </div>
         {% else %}
-            <p>No members or sessions found for this stream/date range.</p>
+            <p>No committee members in this stream.</p>
+        {% endif %}
+
+        <h3>{{ selected_stream.name }} — Student Attendance</h3>
+        {% if student_rows %}
+            <div class="table-scroll">
+            <table border="1" cellpadding="5">
+                <tr><th>Student</th><th>Roll Number</th><th>Present</th><th>Total Sessions</th><th>Percentage</th></tr>
+                {% for row in student_rows %}
+                    <tr class="{% if row.percentage < 50 %}low-attendance{% endif %}">
+                        <td>{{ row.name }}</td>
+                        <td>{{ row.roll_number }}</td>
+                        <td>{{ row.present_count }}</td>
+                        <td>{{ row.total_sessions }}</td>
+                        <td>{{ row.percentage }}%</td>
+                    </tr>
+                {% endfor %}
+            </table>
+            </div>
+        {% else %}
+            <p>No students in this stream yet.</p>
         {% endif %}
     {% endif %}
 {% endblock %}

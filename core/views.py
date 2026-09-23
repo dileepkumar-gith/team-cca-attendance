@@ -143,8 +143,8 @@ def member_delete(request, member_id):
 @login_required
 def attendance_report(request):
     """
-    Shows, per stream, each member's attendance count and percentage
-    across all sessions held for that stream (optionally filtered by date range).
+    Shows, per stream, both committee Members' and Students' attendance
+    percentage across all sessions held for that stream (optionally date-filtered).
     Available to all logged-in roles (Admin, Organizer, Viewer) for visibility.
     """
     streams = Stream.objects.all()
@@ -153,7 +153,8 @@ def attendance_report(request):
     end_date = request.GET.get('end_date')
 
     selected_stream = None
-    report_rows = []
+    member_rows = []
+    student_rows = []
 
     if stream_id:
         selected_stream = get_object_or_404(Stream, id=stream_id)
@@ -165,29 +166,36 @@ def attendance_report(request):
             sessions = sessions.filter(session_date__lte=end_date)
 
         total_sessions = sessions.count()
-        members = selected_stream.members.all()
 
-        for member in members:
+        for member in selected_stream.members.all():
             present_count = Attendance.objects.filter(
                 member=member, session__in=sessions, status='present'
             ).count()
-
             percentage = round((present_count / total_sessions) * 100, 1) if total_sessions > 0 else 0
-
-            report_rows.append({
-                'member': member,
-                'present_count': present_count,
-                'total_sessions': total_sessions,
+            member_rows.append({
+                'name': member.full_name, 'roll_number': member.roll_number,
+                'present_count': present_count, 'total_sessions': total_sessions,
                 'percentage': percentage,
             })
+        member_rows.sort(key=lambda row: row['percentage'])
 
-        # Sort worst-attendance-first, so problem cases are immediately visible.
-        report_rows.sort(key=lambda row: row['percentage'])
+        for student in selected_stream.students.all():
+            present_count = StudentAttendance.objects.filter(
+                student=student, session__in=sessions, status='present'
+            ).count()
+            percentage = round((present_count / total_sessions) * 100, 1) if total_sessions > 0 else 0
+            student_rows.append({
+                'name': student.full_name, 'roll_number': student.roll_number,
+                'present_count': present_count, 'total_sessions': total_sessions,
+                'percentage': percentage,
+            })
+        student_rows.sort(key=lambda row: row['percentage'])
 
     return render(request, 'core/attendance_report.html', {
         'streams': streams,
         'selected_stream': selected_stream,
-        'report_rows': report_rows,
+        'member_rows': member_rows,
+        'student_rows': student_rows,
         'start_date': start_date,
         'end_date': end_date,
     })
@@ -292,7 +300,7 @@ def create_login(request):
         'roles': User.Role.choices,
     })
 
-@role_required('admin', 'organizer')
+@role_required('admin')
 def mark_attendance(request):
     user = request.user
 

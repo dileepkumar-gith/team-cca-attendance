@@ -43,10 +43,23 @@ class AttendanceModelTests(TestCase):
         with self.assertRaises(IntegrityError):
             Attendance.objects.create(session=self.session, member=self.member, status="absent")
 
+
+class MemberModelTests(TestCase):
+    def test_duplicate_roll_number_rejected(self):
+        """
+        NEGATIVE TEST: roll_number is unique=True on the Member model (Day 2),
+        so creating two members with the same roll number should fail.
+        """
+        Member.objects.create(full_name="Person A", branch="CSE", year=2, roll_number="DUPLICATE001")
+        with self.assertRaises(IntegrityError):
+            Member.objects.create(full_name="Person B", branch="ECE", year=3, roll_number="DUPLICATE001")
+
+
 class MarkAttendanceAccessTests(TestCase):
     """
-    Tests the core security rule from Day 4:
-    an Organizer can only mark attendance for their assigned stream(s).
+    Tests the core security rules from Day 4 and Day 11/12:
+    committee attendance is Admin-only; Organizers mark Student attendance
+    only for their assigned stream(s).
     """
 
     def setUp(self):
@@ -64,19 +77,35 @@ class MarkAttendanceAccessTests(TestCase):
 
         self.client = Client()
 
-    def test_organizer_can_access_their_own_stream(self):
-        """POSITIVE TEST: organizer should be able to load their assigned stream."""
+    def test_organizer_cannot_access_committee_attendance(self):
+        """
+        NEGATIVE TEST (updated Day 12): committee attendance marking is now
+        Admin-only. Organizers should be blocked here, even for their own stream.
+        """
         self.client.login(username="danceorg", password="testpass123")
         response = self.client.get(f"/attendance/mark/?stream={self.dance.id}&session_date=2026-09-20")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 403)
 
     def test_organizer_cannot_access_unassigned_stream(self):
         """
-        NEGATIVE TEST: organizer assigned only to Dance should get a 404
-        when trying to access Singing's data directly by URL.
+        NEGATIVE TEST (updated Day 12): committee attendance is Admin-only now,
+        so an Organizer gets 403 immediately — the role check happens before
+        the stream-ownership check ever runs.
         """
         self.client.login(username="danceorg", password="testpass123")
         response = self.client.get(f"/attendance/mark/?stream={self.singing.id}&session_date=2026-09-20")
+        self.assertEqual(response.status_code, 403)
+
+    def test_organizer_can_access_student_attendance_for_their_own_stream(self):
+        """POSITIVE TEST: organizer should be able to mark STUDENT attendance for their own stream."""
+        self.client.login(username="danceorg", password="testpass123")
+        response = self.client.get(f"/attendance/mark-students/?stream={self.dance.id}&session_date=2026-09-20")
+        self.assertEqual(response.status_code, 200)
+
+    def test_organizer_cannot_access_student_attendance_for_other_stream(self):
+        """NEGATIVE TEST: organizer blocked from another stream's student attendance."""
+        self.client.login(username="danceorg", password="testpass123")
+        response = self.client.get(f"/attendance/mark-students/?stream={self.singing.id}&session_date=2026-09-20")
         self.assertEqual(response.status_code, 404)
 
     def test_viewer_cannot_access_mark_attendance_at_all(self):
@@ -84,11 +113,6 @@ class MarkAttendanceAccessTests(TestCase):
         self.client.login(username="testviewer", password="testpass123")
         response = self.client.get("/attendance/mark/")
         self.assertEqual(response.status_code, 403)
-
-    def test_anonymous_user_is_redirected_to_login(self):
-        """NEGATIVE TEST: someone not logged in at all should be redirected, not shown the page."""
-        response = self.client.get("/attendance/mark/")
-        self.assertEqual(response.status_code, 302)  # redirect to login
 
     def test_viewer_cannot_access_specific_stream_either(self):
         """
@@ -100,5 +124,7 @@ class MarkAttendanceAccessTests(TestCase):
         response = self.client.get(f"/attendance/mark/?stream={self.dance.id}&session_date=2026-09-20")
         self.assertEqual(response.status_code, 403)
 
-
-
+    def test_anonymous_user_is_redirected_to_login(self):
+        """NEGATIVE TEST: someone not logged in at all should be redirected, not shown the page."""
+        response = self.client.get("/attendance/mark/")
+        self.assertEqual(response.status_code, 302)  # redirect to login
