@@ -22,7 +22,7 @@ COMMITTEE_DATA = [
     ("B. Sonali", "Y23ACS410", "CSE", 4, "Core Member", []),
     ("N. Anusha", "Y23AIT472", "IT", 4, "Core Member", []),
     ("Ch. Deekshitha Lakshmi", "Y23ACS422", "CSE", 4, "Core Member", []),
-    ("P. Sumanayani", "Y23AIT479", "IT", 4, "Core Member", []),
+   
 ]
 
 
