@@ -5,13 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}TEAM CCA{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'core/style.css' %}">
+    <link rel="icon" href="{% static 'core/LOGO.png' %}" type="image/png">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--brand-primary);">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="{% url 'dashboard' %}">TEAM CCA</a>
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="{% url 'dashboard' %}">
+                <span class="logo-circle me-2">
+                    <img src="{% static 'core/LOGO.png' %}" alt="TEAM CCA Logo">
+                </span>
+                TEAM CCA
+            </a>
             {% if user.is_authenticated %}
             <div class="d-flex align-items-center text-white">
                 <span class="me-3">{{ user.username }} <span class="badge" style="background-color: var(--brand-accent);">{{ user.get_role_display }}</span></span>
@@ -21,7 +29,7 @@
         </div>
     </nav>
 
-        <main class="container py-4">
+    <main class="container py-4">
         {% if user.is_authenticated %}
             <div class="text-end mb-3">
                 <button onclick="history.back()" class="btn btn-outline-secondary btn-sm">Back</button>
@@ -29,6 +37,7 @@
         {% endif %}
         {% block content %}{% endblock %}
     </main>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
