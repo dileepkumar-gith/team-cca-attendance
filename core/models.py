@@ -1,18 +1,18 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.db import models
 
 
 class User(AbstractUser):
     """
     Custom user model for TEAM CCA.
-    Every login account belongs to a real student (linked via Member),
+    Every login account belongs to a real student (linked via Member or Student),
     and has a role that controls what they're allowed to do in the app.
     """
     class Role(models.TextChoices):
         ADMIN = 'admin', 'Admin'
         ORGANIZER = 'organizer', 'Organizer'
         VIEWER = 'viewer', 'Viewer'
+        STUDENT = 'student', 'Student'
 
     role = models.CharField(
         max_length=20,
@@ -34,9 +34,9 @@ class Stream(models.Model):
 
 class Member(models.Model):
     """
-    A student member of TEAM CCA.
+    A committee member of TEAM CCA.
     Committee members (Admin/Organizer/Viewer) are linked here via 'user';
-    most regular members will have no login account at all (user=None).
+    some members may have no login account at all (user=None).
     """
     class Year(models.IntegerChoices):
         FIRST = 1, '1st Year'
@@ -65,6 +65,7 @@ class Member(models.Model):
     def __str__(self):
         return f"{self.full_name} ({self.roll_number})"
 
+
 class OrganizerStream(models.Model):
     """Links an Organizer (User) to the stream(s) they manage."""
     organizer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='organizer_streams')
@@ -91,7 +92,7 @@ class Session(models.Model):
 
 
 class Attendance(models.Model):
-    """One attendance record: a member's status for one session."""
+    """One attendance record: a committee member's status for one session."""
     class Status(models.TextChoices):
         PRESENT = 'present', 'Present'
         ABSENT = 'absent', 'Absent'
@@ -109,7 +110,7 @@ class Attendance(models.Model):
 
 
 class Achievement(models.Model):
-    """An achievement recorded against a member's profile."""
+    """An achievement recorded against a committee member's profile."""
     member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='achievements')
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
@@ -119,6 +120,7 @@ class Achievement(models.Model):
     def __str__(self):
         return f"{self.title} - {self.member.full_name}"
 
+
 class Student(models.Model):
     """A regular club student who attends stream sessions (separate from committee Members)."""
     class Year(models.IntegerChoices):
@@ -127,6 +129,12 @@ class Student(models.Model):
         THIRD = 3, '3rd Year'
         FOURTH = 4, '4th Year'
 
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE,
+        related_name='student_profile',
+        null=True, blank=True,
+        help_text="Linked login account, if this student has one"
+    )
     full_name = models.CharField(max_length=100)
     branch = models.CharField(max_length=50)
     year = models.PositiveSmallIntegerField(choices=Year.choices)
@@ -159,3 +167,73 @@ class StudentAttendance(models.Model):
     def __str__(self):
         return f"{self.student.full_name} - {self.session} - {self.status}"
 
+
+class StudentAchievement(models.Model):
+    """An achievement recorded against a Student's profile (separate from committee Member achievements)."""
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='achievements')
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    date_awarded = models.DateField()
+    added_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='student_achievements_added')
+
+    def __str__(self):
+        return f"{self.title} - {self.student.full_name}"
+
+
+class Event(models.Model):
+    """A one-off event, separate from the regular Tue/Wed/Sat stream sessions."""
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    event_date = models.DateField()
+    event_time = models.TimeField(null=True, blank=True)
+    venue = models.CharField(max_length=200, blank=True)
+    stream = models.ForeignKey(Stream, on_delete=models.SET_NULL, null=True, blank=True, related_name='events')
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='events_created')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.event_date})"
+
+
+class EventOrganizer(models.Model):
+    """Links a User as an organizer for one specific Event (separate from OrganizerStream)."""
+    organizer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='events_organizing')
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='organizers')
+
+    class Meta:
+        unique_together = ('organizer', 'event')
+
+    def __str__(self):
+        return f"{self.organizer.username} → {self.event.name}"
+
+
+class EventStudentAttendance(models.Model):
+    """A Student's attendance for a specific Event (not a regular session)."""
+    class Status(models.TextChoices):
+        PRESENT = 'present', 'Present'
+        ABSENT = 'absent', 'Absent'
+
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='student_attendance_records')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='event_attendance_records')
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.ABSENT)
+    marked_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='event_student_marks')
+    marked_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('event', 'student')
+
+
+class EventMemberAttendance(models.Model):
+    """A committee Member's attendance for a specific Event."""
+    class Status(models.TextChoices):
+        PRESENT = 'present', 'Present'
+        ABSENT = 'absent', 'Absent'
+
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='member_attendance_records')
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='event_attendance_records')
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.ABSENT)
+    marked_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='event_member_marks')
+    marked_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('event', 'member')

@@ -18,4 +18,13 @@ path('reports/attendance/csv/', views.attendance_report_csv, name='attendance_re
 path('my-profile/', views.my_profile, name='my_profile'),
 path('users/create/', views.create_login, name='create_login'),
 path('attendance/mark-students/', views.mark_student_attendance, name='mark_student_attendance'),
+path('events/', views.event_list, name='event_list'),
+path('events/add/', views.event_add, name='event_add'),
+path('events/<int:event_id>/', views.event_detail, name='event_detail'),
+path('events/<int:event_id>/mark/', views.event_mark_attendance, name='event_mark_attendance'),
+path('events/<int:event_id>/report/', views.event_report, name='event_report'),
+path('events/<int:event_id>/delete/', views.event_delete, name='event_delete'),
+path('users/create-student/', views.create_student_login, name='create_student_login'),
+path('my-attendance/', views.my_student_profile, name='my_student_profile'),
+path('students/<int:student_id>/add-achievement/', views.add_student_achievement, name='add_student_achievement'),
 ]

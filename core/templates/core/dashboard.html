@@ -13,6 +13,7 @@
                 </div>
             </div>
         </div>
+    
         <div class="col-md-4">
             <div class="card h-100">
                 <div class="card-body">
@@ -31,7 +32,15 @@
                 </div>
             </div>
         </div>
-
+        <div class="col-md-4">
+             <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Events</h5>
+                    <p class="card-text text-muted">Club events and their attendance.</p>
+                    <a href="{% url 'event_list' %}" class="btn btn-primary btn-sm">Open</a>
+                </div>
+            </div>
+        </div>
         {% if user.role == 'admin' %}
         <div class="col-md-4">
             <div class="card h-100 border-start border-4" style="border-color: var(--brand-accent) !important;">
@@ -57,6 +66,15 @@
                     <h5 class="card-title">Create Committee Login</h5>
                     <p class="card-text text-muted">Admin only.</p>
                     <a href="{% url 'create_login' %}" class="btn btn-accent btn-sm">Open</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+             <div class="card h-100 border-start border-4" style="border-color: var(--brand-accent) !important;">
+                <div class="card-body">
+                    <h5 class="card-title">Create Student Login</h5>
+                    <p class="card-text text-muted">Admin only.</p>
+                    <a href="{% url 'create_student_login' %}" class="btn btn-accent btn-sm">Open</a>
                 </div>
             </div>
         </div>

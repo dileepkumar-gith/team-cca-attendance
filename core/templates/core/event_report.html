@@ -1,0 +1,27 @@
+{% extends 'core/base.html' %}
+{% block title %}Report - {{ event.name }}{% endblock %}
+{% block content %}
+    <h2>{{ event.name }} — Attendance Report</h2>
+    <div class="row g-3 mb-4">
+        <div class="col-md-6"><div class="card"><div class="card-body">
+            <h5>Students</h5><p>Present: {{ student_present }} / {{ student_total }} ({{ student_pct }}%)</p>
+        </div></div></div>
+        <div class="col-md-6"><div class="card"><div class="card-body">
+            <h5>Committee Members</h5><p>Present: {{ member_present }} / {{ member_total }} ({{ member_pct }}%)</p>
+        </div></div></div>
+    </div>
+
+    <h5>Students</h5>
+    <div class="card mb-4"><div class="table-scroll"><table class="table mb-0">
+        <thead><tr><th>Name</th><th>Roll Number</th><th>Status</th></tr></thead>
+        <tbody>{% for r in student_records %}<tr><td>{{ r.student.full_name }}</td><td>{{ r.student.roll_number }}</td>
+            <td>{% if r.status == 'present' %}<span class="badge bg-success">Present</span>{% else %}<span class="badge bg-danger">Absent</span>{% endif %}</td></tr>{% endfor %}</tbody>
+    </table></div></div>
+
+    <h5>Committee Members</h5>
+    <div class="card"><div class="table-scroll"><table class="table mb-0">
+        <thead><tr><th>Name</th><th>Roll Number</th><th>Status</th></tr></thead>
+        <tbody>{% for r in member_records %}<tr><td>{{ r.member.full_name }}</td><td>{{ r.member.roll_number }}</td>
+            <td>{% if r.status == 'present' %}<span class="badge bg-success">Present</span>{% else %}<span class="badge bg-danger">Absent</span>{% endif %}</td></tr>{% endfor %}</tbody>
+    </table></div></div>
+{% endblock %}

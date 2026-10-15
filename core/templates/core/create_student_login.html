@@ -1,0 +1,35 @@
+{% extends 'core/base.html' %}
+{% block title %}Create Student Login - TEAM CCA{% endblock %}
+{% block content %}
+    <div class="card mx-auto" style="max-width: 600px;">
+        <div class="card-header">Create Student Login</div>
+        <div class="card-body">
+            {% if messages %}{% for m in messages %}<div class="alert alert-danger">{{ m }}</div>{% endfor %}{% endif %}
+            {% if unlinked_students %}
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Student</label>
+                        <select name="student_id" class="form-select" required>
+                            <option value="">-- Select Student --</option>
+                            {% for s in unlinked_students %}
+                                <option value="{{ s.id }}">{{ s.full_name }} ({{ s.roll_number }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <input type="text" name="username" class="form-control" required placeholder="e.g. their roll number">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-accent w-100">Create Login</button>
+                </form>
+            {% else %}
+                <p class="text-muted mb-0">All students already have a login linked.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
