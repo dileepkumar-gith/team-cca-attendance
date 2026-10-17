@@ -1,6 +1,6 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
-from . import views
+from . import views,report_views
 
 urlpatterns = [
     path('login/', auth_views.LoginView.as_view(template_name='core/login.html'), name='login'),
@@ -27,4 +27,11 @@ path('events/<int:event_id>/delete/', views.event_delete, name='event_delete'),
 path('users/create-student/', views.create_student_login, name='create_student_login'),
 path('my-attendance/', views.my_student_profile, name='my_student_profile'),
 path('students/<int:student_id>/add-achievement/', views.add_student_achievement, name='add_student_achievement'),
+path('reports/downloads/', report_views.report_downloads, name='report_downloads'),
+path('reports/download/stream/', report_views.download_stream_report, name='download_stream_report'),
+path('reports/download/all/', report_views.download_all_reports, name='download_all_reports'),
+path('reports/download/student/', report_views.download_student_report, name='download_student_report'),
+path('reports/download/member/', report_views.download_member_report, name='download_member_report'),
+path('reports/download/event/', report_views.download_event_report, name='download_event_report'),
+path('reports/download/events-all/', report_views.download_all_event_reports, name='download_all_event_reports'),
 ]

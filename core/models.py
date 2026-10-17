@@ -13,6 +13,7 @@ class User(AbstractUser):
         ORGANIZER = 'organizer', 'Organizer'
         VIEWER = 'viewer', 'Viewer'
         STUDENT = 'student', 'Student'
+        DAIRY = 'dairy', 'Dairy Maintenance'
 
     role = models.CharField(
         max_length=20,

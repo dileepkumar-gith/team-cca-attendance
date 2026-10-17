@@ -41,6 +41,17 @@
                 </div>
             </div>
         </div>
+        {% if user.role == 'admin' or user.role == 'dairy' %}
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Report Downloads</h5>
+                    <p class="card-text text-muted">Excel and ZIP attendance reports.</p>
+                    <a href="{% url 'report_downloads' %}" class="btn btn-primary btn-sm">Open</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
         {% if user.role == 'admin' %}
         <div class="col-md-4">
             <div class="card h-100 border-start border-4" style="border-color: var(--brand-accent) !important;">

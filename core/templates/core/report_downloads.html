@@ -1,0 +1,94 @@
+{% extends 'core/base.html' %}
+{% block title %}Report Downloads - TEAM CCA{% endblock %}
+{% block content %}
+    <h2 class="mb-3">Report Downloads</h2>
+    {% if messages %}{% for m in messages %}<div class="alert alert-danger">{{ m }}</div>{% endfor %}{% endif %}
+
+    <form method="get">
+        <div class="card mb-4">
+            <div class="card-header">1. Period (optional)</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Month</label>
+                        <input type="month" name="month" class="form-control">
+                        <small class="text-muted">If set, this overrides From/To.</small>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">From</label>
+                        <input type="date" name="start_date" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">To</label>
+                        <input type="date" name="end_date" class="form-control">
+                    </div>
+                </div>
+                <small class="text-muted d-block mt-2">Leave all three blank for all-time reports. Event reports ignore the period.</small>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">2. Regular attendance reports</div>
+            <div class="card-body">
+                <div class="row g-2 align-items-end mb-3">
+                    <div class="col-md-7">
+                        <label class="form-label">Stream</label>
+                        <select name="stream" class="form-select">
+                            <option value="">-- Select Stream --</option>
+                            {% for s in streams %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <button type="submit" formaction="{% url 'download_stream_report' %}" class="btn btn-primary w-100">Download stream report</button>
+                    </div>
+                </div>
+                <div class="row g-2 align-items-end mb-3">
+                    <div class="col-md-7">
+                        <label class="form-label">Student</label>
+                        <select name="student" class="form-select">
+                            <option value="">-- Select Student --</option>
+                            {% for s in students %}<option value="{{ s.id }}">{{ s.full_name }} ({{ s.roll_number }})</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <button type="submit" formaction="{% url 'download_student_report' %}" class="btn btn-primary w-100">Download student report</button>
+                    </div>
+                </div>
+                <div class="row g-2 align-items-end mb-3">
+                    <div class="col-md-7">
+                        <label class="form-label">Committee member</label>
+                        <select name="member" class="form-select">
+                            <option value="">-- Select Member --</option>
+                            {% for m in members %}<option value="{{ m.id }}">{{ m.full_name }} ({{ m.roll_number }})</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <button type="submit" formaction="{% url 'download_member_report' %}" class="btn btn-primary w-100">Download member report</button>
+                    </div>
+                </div>
+                <hr>
+                <button type="submit" formaction="{% url 'download_all_reports' %}" class="btn btn-accent">Download ALL streams (ZIP)</button>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">3. Event attendance reports</div>
+            <div class="card-body">
+                <div class="row g-2 align-items-end mb-3">
+                    <div class="col-md-7">
+                        <label class="form-label">Event</label>
+                        <select name="event" class="form-select">
+                            <option value="">-- Select Event --</option>
+                            {% for e in events %}<option value="{{ e.id }}">{{ e.name }} ({{ e.event_date }})</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <button type="submit" formaction="{% url 'download_event_report' %}" class="btn btn-primary w-100">Download event report</button>
+                    </div>
+                </div>
+                <hr>
+                <button type="submit" formaction="{% url 'download_all_event_reports' %}" class="btn btn-accent">Download ALL events (ZIP)</button>
+            </div>
+        </div>
+    </form>
+{% endblock %}

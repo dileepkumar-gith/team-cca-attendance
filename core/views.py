@@ -436,7 +436,7 @@ def create_login(request):
 
     return render(request, 'core/create_login.html', {
         'unlinked_members': unlinked_members,
-        'roles': User.Role.choices,
+                'roles': [r for r in User.Role.choices if r[0] != 'student'],
     })
 
 @role_required('admin')

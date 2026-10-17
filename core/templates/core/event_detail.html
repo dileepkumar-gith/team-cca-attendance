@@ -10,6 +10,7 @@
 
                         {% if can_manage %}
                 <a href="{% url 'event_mark_attendance' event.id %}" class="btn btn-accent btn-sm">Mark Attendance</a>
+                <a href="{% url 'download_event_report' %}?event={{ event.id }}" class="btn btn-outline-primary btn-sm">Download Excel</a>
             {% endif %}
             <a href="{% url 'event_report' event.id %}" class="btn btn-primary btn-sm">View Report</a>
             {% if user.role == 'admin' %}
