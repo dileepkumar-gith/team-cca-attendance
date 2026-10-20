@@ -1,0 +1,8 @@
+<nav class="nav flex-column">
+    {% for item in sidebar_items %}
+        <a href="{{ item.url }}" class="sidebar-link {% if item.active %}active{% endif %}">
+            <i class="bi {{ item.icon }}"></i>
+            <span>{{ item.label }}</span>
+        </a>
+    {% endfor %}
+</nav>

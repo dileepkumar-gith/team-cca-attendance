@@ -91,3 +91,53 @@ a:hover {
     height: 24px;
     object-fit: contain;
 }
+
+/* ---------- Sidebar layout ---------- */
+.app-shell {
+    display: flex;
+    align-items: stretch;
+    min-height: calc(100vh - 140px);
+}
+.app-sidebar {
+    width: 250px;
+    flex-shrink: 0;
+    background: #ffffff;
+    border-right: 1px solid rgba(108, 63, 197, 0.12);
+    padding: 1rem 0.75rem;
+}
+.app-main {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.app-content {
+    max-width: 1150px;
+    margin: 0 auto;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.6rem 0.85rem;
+    margin-bottom: 0.2rem;
+    border-radius: 10px;
+    color: var(--brand-text);
+    font-weight: 500;
+    text-decoration: none;
+}
+.sidebar-link i {
+    font-size: 1.1rem;
+    color: var(--brand-primary);
+}
+.sidebar-link:hover {
+    background: rgba(108, 63, 197, 0.08);
+    color: var(--brand-primary-dark);
+    text-decoration: none;
+}
+.sidebar-link.active {
+    background: var(--brand-primary);
+    color: #ffffff;
+}
+.sidebar-link.active i {
+    color: #ffffff;
+}

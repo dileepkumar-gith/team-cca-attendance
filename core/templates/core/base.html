@@ -8,23 +8,36 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'core/style.css' %}">
     <link rel="icon" href="{% static 'core/LOGO.png' %}" type="image/png">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--brand-primary);">
-        <div class="container">
-            <a class="navbar-brand fw-bold d-flex align-items-center" href="{% url 'dashboard' %}">
-                <span class="logo-circle me-2">
-                    <img src="{% static 'core/LOGO.png' %}" alt="TEAM CCA Logo">
-                </span>
-                TEAM CCA
-            </a>
+    <nav class="navbar navbar-dark shadow-sm" style="background-color: var(--brand-primary);">
+        <div class="container-fluid px-3 px-lg-4">
+            <div class="d-flex align-items-center">
+                {% if user.is_authenticated %}
+                <button class="navbar-toggler d-lg-none me-2" type="button"
+                        data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu"
+                        aria-controls="sidebarMenu" aria-label="Open menu">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                {% endif %}
+                <a class="navbar-brand fw-bold d-flex align-items-center" href="{% url 'dashboard' %}">
+                    <span class="logo-circle me-2">
+                        <img src="{% static 'core/LOGO.png' %}" alt="TEAM CCA Logo">
+                    </span>
+                    TEAM CCA
+                </a>
+            </div>
             {% if user.is_authenticated %}
             <div class="d-flex align-items-center text-white">
-                <span class="me-3">{{ user.username }} <span class="badge" style="background-color: var(--brand-accent);">{{ user.get_role_display }}</span></span>
+                <span class="me-3 small d-none d-sm-inline">
+                    {{ user.username }}
+                    <span class="badge" style="background-color: var(--brand-accent);">{{ user.get_role_display }}</span>
+                </span>
                 <form method="post" action="{% url 'logout' %}" class="d-inline"
-                    onsubmit="return confirm('Are you sure you want to logout?');">
+                      onsubmit="return confirm('Are you sure you want to logout?');">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
                 </form>
@@ -33,14 +46,40 @@
         </div>
     </nav>
 
-    <main class="container py-4">
+    {% if user.is_authenticated %}
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="sidebarMenuLabel">Menu</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            {% include 'core/_sidebar_links.html' %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="app-shell">
         {% if user.is_authenticated %}
-            <div class="text-end mb-3">
-                <button onclick="history.back()" class="btn btn-outline-secondary btn-sm">Back</button>
-            </div>
+        <aside class="app-sidebar d-none d-lg-block">
+            {% include 'core/_sidebar_links.html' %}
+        </aside>
         {% endif %}
-        {% block content %}{% endblock %}
-    </main>
+
+        <main class="app-main">
+            <div class="app-content py-4 px-3 px-lg-4">
+                {% if user.is_authenticated %}
+                    <div class="text-end mb-3">
+                        <button onclick="history.back()" class="btn btn-outline-secondary btn-sm">Back</button>
+                    </div>
+                {% endif %}
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <footer class="text-center text-muted small py-4">
+        &copy; {% now "Y" %} TEAM CCA &mdash; Bapatla Engineering College
+    </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
 </body>
